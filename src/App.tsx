@@ -37,15 +37,7 @@ function useTrack(){
   }
   return {play,stop}
 }
-  const start = () => {
-    if (ctx.current) return;
-    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-    const c = new AudioCtx();
-    const master = c.createGain();
-    master.gain.value = 0.03; // volume geral da música
-    master.connect(c.destination);
-    ctx.current = c;
-
+ 
     // Cria um drone grave contínuo
     [55, 82.41].forEach((freq, index) => {
       const osc = c.createOscillator();
