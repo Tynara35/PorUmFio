@@ -14,7 +14,6 @@ const bombs=[
 
 function useSound(enabled:boolean){const ctx=useRef<AudioContext|null>(null);return(type:'tick'|'cut'|'safe'|'boom'|'start'|'win')=>{if(!enabled)return;const A=window.AudioContext||(window as any).webkitAudioContext;ctx.current??=new A();const c=ctx.current!,now=c.currentTime;const tone=(f:number,t:number,d:number=.12,v=.08,w:OscillatorType='sine')=>{const o=c.createOscillator(),g=c.createGain();o.type=w;o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(v,now+t);g.gain.exponentialRampToValueAtTime(.001,now+t+d);o.connect(g).connect(c.destination);o.start(now+t);o.stop(now+t+d)};if(type==='tick')tone(900,0,.05,.035,'square');if(type==='cut'){tone(180,0,.08,.11,'sawtooth');tone(90,.05,.12,.08,'square')}if(type==='safe'){tone(520,0,.12,.08);tone(760,.12,.18,.08)}if(type==='start'){tone(220,0,.12,.08);tone(330,.13,.12,.08)}if(type==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.3,.08))}if(type==='boom'){const len=c.sampleRate*.7,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);const s=c.createBufferSource(),g=c.createGain(),filter=c.createBiquadFilter();filter.type='lowpass';filter.frequency.value=420;g.gain.value=.42;s.buffer=b;s.connect(filter).connect(g).connect(c.destination);s.start()}}}
 
-function useSuspenseMusic(){const ctx=useRef<AudioContext|null>(null),nodes=useRef<OscillatorNode[]>([]),timer=useRef<number|null>(null);const stop=()=>{if(timer.current!==null)window.clearInterval(timer.current);timer.current=null;nodes.current.forEach(node=>{try{node.stop()}catch{}});nodes.current=[];if(ctx.current){void ctx.current.close();ctx.current=null}};const start=()=>{if(ctx.current)return;const A=window.AudioContext||(window as any).webkitAudioContext,c=new A(),master=c.createGain();ctx.current=c;master.gain.value=.035;master.connect(c.destination);[55,82.41].forEach((frequency,index)=>{const osc=c.createOscillator(),gain=c.createGain();osc.type=index?'triangle':'sine';osc.frequency.value=frequency;gain.gain.value=index?.22:.35;osc.connect(gain).connect(master);osc.start();nodes.current.push(osc)});const pulse=()=>{if(!ctx.current)return;const now=c.currentTime,osc=c.createOscillator(),gain=c.createGain();osc.type='sine';osc.frequency.setValueAtTime(110,now);osc.frequency.exponentialRampToValueAtTime(55,now+.45);gain.gain.setValueAtTime(.001,now);gain.gain.exponentialRampToValueAtTime(.16,now+.02);gain.gain.exponentialRampToValueAtTime(.001,now+.5);osc.connect(gain).connect(master);osc.start(now);osc.stop(now+.52)};pulse();timer.current=window.setInterval(pulse,1200);void c.resume()};return{start,stop}}
 function useSuspenseMusic() {
   const ctx = useRef<AudioContext | null>(null);
   const nodes = useRef<OscillatorNode[]>([]);
@@ -106,7 +105,47 @@ export default function App(){
 
 function Stage({n,label,wires,ok,duration,setDuration,points,setPoints}:{n:string;label:string;wires:string;ok:boolean;duration:number;setDuration:(value:number)=>void;points:number;setPoints:(value:number)=>void}){return <div><b>{n}</b><span><strong>{label}</strong><small>{wires}</small><span className="stage-config"><label className="stage-time">Tempo <select aria-label={`Tempo para ${label}`} value={duration} onChange={e=>setDuration(Number(e.target.value))}>{[15,30,45,60,90,120].map(value=><option value={value} key={value}>{value} segundos</option>)}</select></label><label className="stage-time">Pontos <input aria-label={`Pontos para ${label}`} type="number" min="1" max="99" value={points} onChange={e=>setPoints(Math.max(1,Math.min(99,Number(e.target.value)||1)))}/></label></span></span><i className={ok?'ok':''}>{ok?'PRONTO':'SEM QUESTÃO'}</i></div>}
 function Scoreboard({teams}:{teams:Team[]}){return <div className="scoreboard">{[...teams].sort((a,b)=>b.score-a.score).map(t=><div key={t.id}><i style={{background:t.color}}/><span>{t.name}</span><b>{t.score} pts</b></div>)}</div>}
-function Bomb({skin,wires,status,selected,cutWires,seconds}:{skin:string;wires:number;status:string;selected:number|null;cutWires:number[];seconds:number}){return <div className={`bomb-machine ${skin} ${status}`}><div className="explosion">{Array.from({length:16},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}/>)}</div><div className="top-wire-bundle">{Array.from({length:wires},(_,i)=><div className={`top-wire ${selected===i?'cutting-now':''} ${cutWires.includes(i)?'cut':''}`} key={i} style={{'--wire':wireColors[i],'--wire-x':`${(i-(wires-1)/2)*18}px`,'--wire-w':`${90+i*7}px`,'--wire-h':`${92+(i%3)*22}px`,'--wire-rot':`${(i-(wires-1)/2)*2}deg`} as React.CSSProperties}><i/></div>)}</div><div className="fuse-box"><span/><span/><span/></div><div className="bomb-shell"><div className="shine"/><div className="display"><small>TEMPO</small><b>{String(seconds).padStart(2,'0')}</b><em>SEGUNDOS</em></div><div className="serial"></div><div className="remaining-gauge">{Array.from({length:wires},(_,i)=><i key={i} className={cutWires.includes(i)?'off':''} 
+function Bomb({skin,wires,status,selected,cutWires,seconds}:{skin:string;wires:number;status:string;selected:number|null;cutWires:number[];seconds:number}){
+  return <div className={`bomb-machine ${skin} ${status}`}>
+    <div className="explosion">
+      {Array.from({length:16},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}/>)}
+    </div>
+
+    <div className="top-wire-bundle">
+      {Array.from({length:wires},(_,i)=>
+        <div
+          className={`top-wire ${selected===i?'cutting-now':''} ${cutWires.includes(i)?'cut':''}`}
+          key={i}
+          style={{
+            '--wire':wireColors[i],
+            '--wire-x':`${(i-(wires-1)/2)*18}px`,
+            '--wire-w':`${90+i*7}px`,
+            '--wire-h':`${92+(i%3)*22}px`,
+            '--wire-rot':`${(i-(wires-1)/2)*2}deg`
+          } as React.CSSProperties}
+        >
+          <i/>
+        </div>
+      )}
+    </div>
+
+    <div className="fuse-box"><span/><span/><span/></div>
+
+    <div className="bomb-shell">
+      <div className="shine"/>
+      <div className="display">
+        <small>TEMPO</small>
+        <b>{String(seconds).padStart(2,'0')}</b>
+        <em>SEGUNDOS</em>
+      </div>
+      <div className="remaining-gauge">
+        {Array.from({length:wires},(_,i)=>
+          <i key={i} className={cutWires.includes(i)?'off':''}/>
+        )}
+      </div>
+    </div>
+  </div>
+}
 function Shell({children}:{children:React.ReactNode}){return <div className="app"><div className="noise"/><div className="hazard top"/><div className="hazard bottom"/>{children}</div>}
 
 function Editor({questions,setQuestions,close}:{questions:Question[];setQuestions:(q:Question[])=>void;close:()=>void}){
