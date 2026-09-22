@@ -14,26 +14,29 @@ const bombs=[
 
 function useSound(enabled:boolean){const ctx=useRef<AudioContext|null>(null);return(type:'tick'|'cut'|'safe'|'boom'|'start'|'win')=>{if(!enabled)return;const A=window.AudioContext||(window as any).webkitAudioContext;ctx.current??=new A();const c=ctx.current!,now=c.currentTime;const tone=(f:number,t:number,d:number=.12,v=.08,w:OscillatorType='sine')=>{const o=c.createOscillator(),g=c.createGain();o.type=w;o.frequency.setValueAtTime(f,now+t);g.gain.setValueAtTime(v,now+t);g.gain.exponentialRampToValueAtTime(.001,now+t+d);o.connect(g).connect(c.destination);o.start(now+t);o.stop(now+t+d)};if(type==='tick')tone(900,0,.05,.035,'square');if(type==='cut'){tone(180,0,.08,.11,'sawtooth');tone(90,.05,.12,.08,'square')}if(type==='safe'){tone(520,0,.12,.08);tone(760,.12,.18,.08)}if(type==='start'){tone(220,0,.12,.08);tone(330,.13,.12,.08)}if(type==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,i*.12,.3,.08))}if(type==='boom'){const len=c.sampleRate*.7,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);const s=c.createBufferSource(),g=c.createGain(),filter=c.createBiquadFilter();filter.type='lowpass';filter.frequency.value=420;g.gain.value=.42;s.buffer=b;s.connect(filter).connect(g).connect(c.destination);s.start()}}}
 
-function useSuspenseMusic() {
-  const ctx = useRef<AudioContext | null>(null);
-  const nodes = useRef<OscillatorNode[]>([]);
-  const timer = useRef<number | null>(null);
-
-  const stop = () => {
-    if (timer.current !== null) {
-      window.clearInterval(timer.current);
-      timer.current = null;
-    }
-    nodes.current.forEach(node => {
-      try { node.stop(); } catch {}
-    });
-    nodes.current = [];
-    if (ctx.current) {
-      void ctx.current.close();
-      ctx.current = null;
-    }
-  };
-
+function useTrack(){
+  const audio=useRef<HTMLAudioElement|null>(null)
+  const key=useRef<string|null>(null)
+  const play=(url:string,volume=0.4,loop=true)=>{
+    // Se já está tocando essa mesma faixa, não reinicia
+    if(key.current===url&&audio.current)return
+    if(audio.current){audio.current.pause();audio.current.currentTime=0}
+    const a=new Audio(url)
+    a.loop=loop
+    a.volume=volume
+    void a.play().catch(()=>{/* navegador pode bloquear até o primeiro clique */})
+    audio.current=a
+    key.current=url
+  }
+  const stop=()=>{
+    if(!audio.current)return
+    audio.current.pause()
+    audio.current.currentTime=0
+    audio.current=null
+    key.current=null
+  }
+  return {play,stop}
+}
   const start = () => {
     if (ctx.current) return;
     const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
