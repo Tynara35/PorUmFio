@@ -18,13 +18,12 @@ function useTrack(){
   const audio=useRef<HTMLAudioElement|null>(null)
   const key=useRef<string|null>(null)
   const play=(url:string,volume=0.4,loop=true)=>{
-    // Se já está tocando essa mesma faixa, não reinicia
     if(key.current===url&&audio.current)return
     if(audio.current){audio.current.pause();audio.current.currentTime=0}
     const a=new Audio(url)
     a.loop=loop
     a.volume=volume
-    void a.play().catch(()=>{/* navegador pode bloquear até o primeiro clique */})
+    void a.play().catch(()=>{})
     audio.current=a
     key.current=url
   }
@@ -37,6 +36,7 @@ function useTrack(){
   }
   return {play,stop}
 }
+
 export default function App(){
  const [screen,setScreen]=useState<Screen>('home'),[questions,setQuestions]=useState<Question[]>(()=>{try{return JSON.parse(localStorage.getItem(STORE)||'null')||initialQuestions}catch{return initialQuestions}}),[names,setNames]=useState(['Equipe Alfa','Equipe Beta']),[teams,setTeams]=useState<Team[]>([]),[bombIndex,setBombIndex]=useState(0),[turnIndex,setTurnIndex]=useState(0),[question,setQuestion]=useState<Question|null>(null),[questionMode,setQuestionMode]=useState<'random'|'manual'>('random'),[manualIds,setManualIds]=useState<string[]>(Array(7).fill('')),[seconds,setSeconds]=useState(30),[status,setStatus]=useState<'armed'|'cutting'|'safe'|'exploded'>('armed'),[selected,setSelected]=useState<number|null>(null),[cutWires,setCutWires]=useState<number[]>([]),[blackTime,setBlackTime]=useState(30),[silverTime,setSilverTime]=useState(45),[goldTime,setGoldTime]=useState(60),[blackPoints,setBlackPoints]=useState(1),[silverPoints,setSilverPoints]=useState(2),[goldPoints,setGoldPoints]=useState(3),[sound,setSound]=useState(true),[used,setUsed]=useState<string[]>([])
 const play=useSound(sound),music=useTrack(),bomb=bombs[bombIndex],team=teams[turnIndex%Math.max(teams.length,1)]
