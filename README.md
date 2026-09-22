@@ -27,4 +27,4 @@ pnpm dev
 pnpm build
 ```
 
-O workflow em `.github/workflows/deploy.yml` publica automaticamente no GitHub Pages. Caso o nome do repositório seja diferente de `FioDaBomba`, altere `base` em `vite.config.ts`.
+O workflow em `.github/workflows/deploy.yml` publica automaticamente no GitHub Pages. O endereço-base está configurado para o repositório `PorUmFio`.
