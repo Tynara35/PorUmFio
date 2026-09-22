@@ -106,44 +106,47 @@ export default function App(){
 function Stage({n,label,wires,ok,duration,setDuration,points,setPoints}:{n:string;label:string;wires:string;ok:boolean;duration:number;setDuration:(value:number)=>void;points:number;setPoints:(value:number)=>void}){return <div><b>{n}</b><span><strong>{label}</strong><small>{wires}</small><span className="stage-config"><label className="stage-time">Tempo <select aria-label={`Tempo para ${label}`} value={duration} onChange={e=>setDuration(Number(e.target.value))}>{[15,30,45,60,90,120].map(value=><option value={value} key={value}>{value} segundos</option>)}</select></label><label className="stage-time">Pontos <input aria-label={`Pontos para ${label}`} type="number" min="1" max="99" value={points} onChange={e=>setPoints(Math.max(1,Math.min(99,Number(e.target.value)||1)))}/></label></span></span><i className={ok?'ok':''}>{ok?'PRONTO':'SEM QUESTÃO'}</i></div>}
 function Scoreboard({teams}:{teams:Team[]}){return <div className="scoreboard">{[...teams].sort((a,b)=>b.score-a.score).map(t=><div key={t.id}><i style={{background:t.color}}/><span>{t.name}</span><b>{t.score} pts</b></div>)}</div>}
 function Bomb({skin,wires,status,selected,cutWires,seconds}:{skin:string;wires:number;status:string;selected:number|null;cutWires:number[];seconds:number}){
+  const exploded = status === 'exploded';
   return <div className={`bomb-machine ${skin} ${status}`}>
     <div className="explosion">
       {Array.from({length:16},(_,i)=><i key={i} style={{'--i':i} as React.CSSProperties}/>)}
     </div>
 
-    <div className="top-wire-bundle">
-      {Array.from({length:wires},(_,i)=>
-        <div
-          className={`top-wire ${selected===i?'cutting-now':''} ${cutWires.includes(i)?'cut':''}`}
-          key={i}
-          style={{
-            '--wire':wireColors[i],
-            '--wire-x':`${(i-(wires-1)/2)*18}px`,
-            '--wire-w':`${90+i*7}px`,
-            '--wire-h':`${92+(i%3)*22}px`,
-            '--wire-rot':`${(i-(wires-1)/2)*2}deg`
-          } as React.CSSProperties}
-        >
-          <i/>
-        </div>
-      )}
-    </div>
-
-    <div className="fuse-box"><span/><span/><span/></div>
-
-    <div className="bomb-shell">
-      <div className="shine"/>
-      <div className="display">
-        <small>TEMPO</small>
-        <b>{String(seconds).padStart(2,'0')}</b>
-        <em>SEGUNDOS</em>
-      </div>
-      <div className="remaining-gauge">
+    {!exploded && <>
+      <div className="top-wire-bundle">
         {Array.from({length:wires},(_,i)=>
-          <i key={i} className={cutWires.includes(i)?'off':''}/>
+          <div
+            className={`top-wire ${selected===i?'cutting-now':''} ${cutWires.includes(i)?'cut':''}`}
+            key={i}
+            style={{
+              '--wire':wireColors[i],
+              '--wire-x':`${(i-(wires-1)/2)*18}px`,
+              '--wire-w':`${90+i*7}px`,
+              '--wire-h':`${92+(i%3)*22}px`,
+              '--wire-rot':`${(i-(wires-1)/2)*2}deg`
+            } as React.CSSProperties}
+          >
+            <i/>
+          </div>
         )}
       </div>
-    </div>
+
+      <div className="fuse-box"><span/><span/><span/></div>
+
+      <div className="bomb-shell">
+        <div className="shine"/>
+        <div className="display">
+          <small>TEMPO</small>
+          <b>{String(seconds).padStart(2,'0')}</b>
+          <em>SEGUNDOS</em>
+        </div>
+        <div className="remaining-gauge">
+          {Array.from({length:wires},(_,i)=>
+            <i key={i} className={cutWires.includes(i)?'off':''}/>
+          )}
+        </div>
+      </div>
+    </>}
   </div>
 }
 function Shell({children}:{children:React.ReactNode}){return <div className="app"><div className="noise"/><div className="hazard top"/><div className="hazard bottom"/>{children}</div>}
