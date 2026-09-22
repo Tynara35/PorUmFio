@@ -4,13 +4,16 @@ Jogo local em equipes, instalável como PWA e pronto para GitHub Pages.
 
 ## Como funciona
 
-- 3 bombas pretas com 4 fios e valor de 1 ponto.
-- 3 bombas prateadas com 7 fios e valor de 2 pontos.
-- 1 bomba dourada com 10 fios e valor de 3 pontos.
+- 3 bombas pretas com 4 fios, 3 bombas prateadas com 7 fios e 1 bomba dourada com 10 fios.
+- A partida sempre percorre as sete bombas, mesmo quando uma delas explode.
 - Cada alternativa corresponde a um fio colorido que sai do topo da bomba.
-- A equipe corta os fios das respostas erradas até restar apenas o fio correto.
+- Cada fio é cortado por uma equipe diferente; a vez gira depois de todo corte.
+- As equipes cortam as respostas erradas até restar apenas o fio correto.
 - Cortar o fio da resposta correta ou deixar o tempo acabar causa a explosão.
 - O cronômetro pode ser escolhido separadamente para as bombas pretas, prateadas e dourada.
+- A pontuação também pode ser definida separadamente para cada conjunto de bombas.
+- As perguntas podem ser sorteadas ou escolhidas manualmente para cada uma das sete bombas.
+- Música de suspense contínua e efeitos sonoros acompanham a partida.
 - Banco local com cadastro, exclusão, importação e exportação JSON.
 - Importação compatível com os formatos nativo, Boom (`p/a/c`) e Acerte ou Caia (`q/options/correct`).
 
