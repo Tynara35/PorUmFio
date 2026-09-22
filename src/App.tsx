@@ -37,42 +37,6 @@ function useTrack(){
   }
   return {play,stop}
 }
- 
-    // Cria um drone grave contínuo
-    [55, 82.41].forEach((freq, index) => {
-      const osc = c.createOscillator();
-      const gain = c.createGain();
-      osc.type = index ? 'triangle' : 'sine';
-      osc.frequency.value = freq;
-      gain.gain.value = index ? 0.2 : 0.3;
-      osc.connect(gain).connect(master);
-      osc.start();
-      nodes.current.push(osc);
-    });
-
-    // Adiciona um pulso rítmico para dar sensação de urgência
-    const pulse = () => {
-      if (!ctx.current) return;
-      const now = c.currentTime;
-      const osc = c.createOscillator();
-      const gain = c.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(110, now);
-      osc.frequency.exponentialRampToValueAtTime(55, now + 0.45);
-      gain.gain.setValueAtTime(0.001, now);
-      gain.gain.exponentialRampToValueAtTime(0.15, now + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
-      osc.connect(gain).connect(master);
-      osc.start(now);
-      osc.stop(now + 0.52);
-    };
-    pulse();
-    timer.current = window.setInterval(pulse, 1200); // pulso a cada 1,2 segundos
-    void c.resume();
-  };
-
-  return { start, stop };
-}
 export default function App(){
  const [screen,setScreen]=useState<Screen>('home'),[questions,setQuestions]=useState<Question[]>(()=>{try{return JSON.parse(localStorage.getItem(STORE)||'null')||initialQuestions}catch{return initialQuestions}}),[names,setNames]=useState(['Equipe Alfa','Equipe Beta']),[teams,setTeams]=useState<Team[]>([]),[bombIndex,setBombIndex]=useState(0),[turnIndex,setTurnIndex]=useState(0),[question,setQuestion]=useState<Question|null>(null),[questionMode,setQuestionMode]=useState<'random'|'manual'>('random'),[manualIds,setManualIds]=useState<string[]>(Array(7).fill('')),[seconds,setSeconds]=useState(30),[status,setStatus]=useState<'armed'|'cutting'|'safe'|'exploded'>('armed'),[selected,setSelected]=useState<number|null>(null),[cutWires,setCutWires]=useState<number[]>([]),[blackTime,setBlackTime]=useState(30),[silverTime,setSilverTime]=useState(45),[goldTime,setGoldTime]=useState(60),[blackPoints,setBlackPoints]=useState(1),[silverPoints,setSilverPoints]=useState(2),[goldPoints,setGoldPoints]=useState(3),[sound,setSound]=useState(true),[used,setUsed]=useState<string[]>([])
 const play=useSound(sound),music=useTrack(),bomb=bombs[bombIndex],team=teams[turnIndex%Math.max(teams.length,1)]
