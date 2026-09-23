@@ -67,7 +67,18 @@ const isLastBomb=bombIndex===6
  const rotateTeam=()=>setTurnIndex(value=>(value+1)%Math.max(teams.length,1))
  const begin=()=>{const ready=names.map((n,i)=>({id:crypto.randomUUID(),name:n.trim(),color:teamColors[i],score:0})).filter(t=>t.name);if(ready.length<2||!coverage[4]||!coverage[7]||!coverage[10]||(questionMode==='manual'&&!manualReady))return;const first=questionFor(0,[]);setTeams(ready);setTurnIndex(0);setBombIndex(0);setUsed(first?[first.id]:[]);setQuestion(first);setSeconds(timeFor(0));setStatus('armed');setSelected(null);setCutWires([]);setScreen('game');play('start')}
  const advance=()=>{if(bombIndex===6){music.stop();play('win');setScreen('result');return}const next=bombIndex+1,q=questionFor(next,used);setBombIndex(next);setQuestion(q);setUsed(v=>q?[...v,q.id]:v);setSeconds(timeFor(next));setSelected(null);setCutWires([]);setStatus('armed');play('start')}
- const choose=(i:number)=>{if(status!=='armed'||!question||cutWires.includes(i))return;setSelected(i);setStatus('cutting');play('cut');setTimeout(()=>{const cutCorrect=question.options?.[i]===question.answer;if(cutCorrect){rotateTeam();setStatus('exploded');play('boom');setTimeout(advance,1900);return}const nextCuts=[...cutWires,i];setCutWires(nextCuts);if(nextCuts.length===bomb.wires-1){setSelected(null);setStatus('safe');setTeams(v=>v.map(t=>t.id===team.id?{...t,score:t.score+pointsFor(bombIndex)}:t));rotateTeam();play('safe');setTimeout(advance,1900)}else{rotateTeam();setTimeout(()=>{setSelected(null);setStatus('armed')},450)}},600)}
+ const choose=(i:number)=>{if(status!=='armed'||!question||cutWires.includes(i))return;setSelected(i);setStatus('cutting');play('cut');setTimeout(()=>{const cutCorrect=question.options?.[i]===question.answer;if(cutCorrect){
+  const remaining=bomb.wires-cutWires.length;
+  if(remaining===2&&teams.length>1){
+    const next=teams[(turnIndex+1)%teams.length];
+    setTeams(v=>v.map(t=>t.id===next.id?{...t,score:t.score+pointsFor(bombIndex)}:t));
+  }
+  rotateTeam();
+  setStatus('exploded');
+  play('boom');
+  setTimeout(advance,1900);
+  return;
+};return}const nextCuts=[...cutWires,i];setCutWires(nextCuts);if(nextCuts.length===bomb.wires-1){setSelected(null);setStatus('safe');setTeams(v=>v.map(t=>t.id===team.id?{...t,score:t.score+pointsFor(bombIndex)}:t));rotateTeam();play('safe');setTimeout(advance,1900)}else{rotateTeam();setTimeout(()=>{setSelected(null);setStatus('armed')},450)}},600)}
  useEffect(()=>{if(screen!=='game'||status!=='armed')return;const timer=setInterval(()=>setSeconds(s=>{if(s<=1){clearInterval(timer);rotateTeam();setStatus('exploded');play('boom');setTimeout(advance,1900);return 0}if(s<=6)play('tick');return s-1}),1000);return()=>clearInterval(timer)},[screen,status,bombIndex])
  const soundButton=<button className="sound" onClick={()=>setSound(v=>!v)}>{sound?'◖)) Som + música':'◖– Sem som'}</button>
  if(screen==='home')return <Shell><main className="home"><div className="brand"><span className="brand-mark">✂</span><b>FIO DA</b><strong>BOMBA</strong></div><div className="hero-bomb"><div className="spark">✦</div><div className="fuse"/><div className="bomb-body black"><div className="timer-face">00:30</div><div className="bolts">••••</div></div></div><div className="intro"><span>DESAFIO EM EQUIPES</span><h1>Corte o fio.<br/><em>Salve a rodada.</em></h1><p>Sete bombas. Uma alternativa por fio. Uma escolha errada e tudo vai pelos ares.</p><div className="home-actions"><button className="primary" onClick={()=>setScreen('setup')}>Iniciar missão</button><button onClick={()=>setScreen('editor')}>Banco de perguntas <small>{questions.length}</small></button>{soundButton}</div></div></main></Shell>
